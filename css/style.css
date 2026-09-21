@@ -50,62 +50,26 @@ body i {
 /* -------------------------------------------------------------------------- */
 /* 								LEAFLET SIDEBAR					   	 		  */													
 /* -------------------------------------------------------------------------- */
-
-#sidebar {
-	position: absolute;
+.leaflet-sidebar-content {
+    padding: 0;
 }
 
-/* longueur */
-@media (min-width: 1200px) {
-	.leaflet-sidebar, .leaflet-sidebar-header {
-		width: 550px;
-		max-width: 550px;
-	}
+.leaflet-sidebar-pane {
+    padding: 20px;
 }
 
-/* header panneau avec titre carte */
-.leaflet-sidebar-header {
-	background: none;
-	font-family: 'Marianne-Bold';
-	text-transform: uppercase;
-	color:var(--vert-anct);
-	font-size: 14px;
-	margin:0px 10px 15px 5px;
-	height: auto;
-	z-index: 0;
+.leaflet-sidebar-pane h2 {
+    margin-bottom: 20px;
 }
 
-.leaflet-sidebar-close {
-	color:black;
-	z-index: 10000 !important;
+.card {
+    border-radius: 12px;
 }
 
-
-/* sidebar */
-.leaflet-sidebar-tabs {
-	background-color: var(--vert-anct);
-	background: linear-gradient(180deg, rgba(0,172,140,1) 0%, rgba(169,242,229,1) 100%); 
-	box-shadow: 2px 0px 2px 0px #656565;
+.table th {
+    width: 120px;
+    font-weight: 600;
 }
-
-/* boutons sidebar */
-/* boutons sidebar */
-.leaflet-sidebar-tabs > ul > li {
-	color:white;
-}
-
-.leaflet-sidebar-tabs > ul > li.active,
-.leaflet-sidebar-tabs > ul > li.active:hover {
-	background-color: rgb(249, 249, 251);
-	color:var(--bleu-anct);
-	border-left: solid 3px var(--jaune-anct);	 
-}
-
-.leaflet-sidebar-tabs > ul > li:hover {
-	background-color: rgba(0,0,0,.25);
-	color:white;
-	transition: .2s
-} 
 
 /* nom onglet au survol d'un bouton */
 .tab-name {
@@ -150,6 +114,35 @@ body i {
 	text-decoration: underline 2px white;
 }
 
+#commune-card {
+    animation: fadeIn .2s ease;
+}
+
+#sidebar-title {
+    margin-bottom: 15px;
+}
+
+#sidebar-content table th {
+    width: 120px;
+}
+
+#close-card {
+    margin-bottom: 15px;
+}
+
+@keyframes fadeIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}
+
+
 /* -------------------------------------------------------------------------- */
 /* 									LEAFLET MAP					   	 		  */													
 /* -------------------------------------------------------------------------- */
@@ -167,23 +160,6 @@ body i {
 .leaflet-control-layers {
 	font-size: 10px;
 }
-
-/* style checkbox */
-/* .leaflet-control-layers-overlays input[type="checkbox"] {
-	display: none;
-}
-
-.leaflet-control-layers-overlays.input[type=checkbox] + label {
-	background: url('/lib/line-awesome-1.3.0/svg/eye.svg') no-repeat;
-	display: inline-block;
-}
-
-.leaflet-control-layers-overlays.input[type=checkbox]:checked + label {
-	background: url('/lib/line-awesome-1.3.0/svg/eye-slash.svg') no-repeat;
-	display: inline-block;
-	height: 50px;
-	width: 50px;
-} */
 
 /* chef lieux */
 .leaflet-marker-pane {
