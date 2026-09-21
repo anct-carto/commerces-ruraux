@@ -1,0 +1,723 @@
+// Récupérer la clé Grist depuis "env"
+
+const GRIST_API_KEY = "6f5089d6ca3d997fcf4d1f04a952b37d9dca8adf"; // ⚠️ visible dans le navigateur
+
+async function getGristData() {
+const url = "https://grist.incubateur.anct.gouv.fr/o/anct/api/docs/2fpDK6gYxBFB6nWWZyA92b/download/csv?viewSection=4&tableId=Engagement_citoyen";
+
+try {
+    // 🔄 fetch CSV depuis Grist avec clé API
+    const response = await fetch(url, {
+        headers: { "Authorization": `Bearer ${GRIST_API_KEY}` }
+    });
+
+    if (!response.ok) throw new Error("Erreur lors du téléchargement du CSV (" + response.status + ")");
+
+    const csvText = await response.text();
+
+    // 🧩 Parse CSV → JSON
+    const parsed = Papa.parse(csvText, { header: true, dynamicTyping: true, skipEmptyLines: true });
+    const data = parsed.data.filter(e => e.codgeo && e.echelon);
+
+    // 🧠 Traitement léger avant stockage
+    data.forEach(e => {
+        if (typeof e.ingredients === "string") {
+            e.ingredients = e.ingredients.split(";\n").map(x => x.trim());
+        }
+    });
+
+    sessionStorage.setItem("session_data1", JSON.stringify(data));
+    console.log(`✅ Données chargées depuis Grist (${data.length} lignes)`);
+    return data;
+} catch (err) {
+    console.error("❌ Erreur de chargement CSV Grist :", err);
+    return [];
+}
+}
+
+// 🔔 Appel pour tester
+getGristData();
+
+
+
+
+
+
+
+
+/*
+    Carte interactive des territoires en commun et territoires d'engagement
+    Version finale (jointure dynamique selon "echelon", Grist key depuis variable d'env)
+    Hassen Chougar / service cartographie - ANCT
+    dependances : Leaflet 1.0.8, vue 2.7, vue-router 4.0.5, bootstrap 5.1, papaparse 5.3.1
+
+    NOTE: la clé Grist est lue depuis une "variable d'environnement" de manière flexible :
+    - si bundler (process.env.GRIST_API_KEY) -> utilisé
+    - sinon window.__GRIST_API_KEY__ (injecter côté serveur dans la page)
+    - sinon meta[name="grist-api-key"] content="..." (injecter côté serveur)
+    Si aucune n'est trouvée, le script affiche une erreur et n'appelle pas l'API.
+*/
+
+// -----------------------------
+async function getLocalCsvData() {
+    try {
+    const response = await fetch("./data/liste_tec_te.csv");
+    if (!response.ok) throw new Error("Erreur lors du téléchargement du CSV (" + response.status + ")");
+        const csvText = await response.text();
+    
+        // Sépare les lignes
+        const lines = csvText.trim().split("\n");
+    
+        // Récupère les en-têtes
+        const headers = lines[0].split(",");
+    
+        // Transforme chaque ligne en objet
+        const data = lines.slice(1).map(line => {
+            const values = line.split(",");
+            const obj = {};
+            headers.forEach((header, i) => {
+                obj[header] = values[i];
+            });
+            return obj;
+        });
+    
+        sessionStorage.setItem("session_data1", JSON.stringify(data));
+        console.log(`✅ Données chargées depuis CSV local (${data.length} lignes)`);
+        return data;
+    
+    } catch (err) {
+        console.error("❌ Erreur de chargement CSV local :", err);
+        return [];
+    }
+    }
+    
+    // export default {
+    // name: "App",
+    // data() {
+    // return { csvData: [] };
+    // },
+    // async mounted() {
+    // this.csvData = await getLocalCsvDataSimple();
+    // if (this.csvData.length === 0) console.warn("Aucune donnée CSV récupérée -> rien à afficher.");
+    // }
+    // };
+    
+
+// -----------------------------
+// utilitaire de lecture geojson
+async function loadGeoJson(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Erreur chargement ${url}: ${res.status}`);
+    return res.json();
+}
+
+// -----------------------------
+// Calculer centroïde simple (approx, convient pour usage d'affichage)
+// function getCentroid(geom) {
+//     if (!geom) return null;
+//     const type = geom.type;
+//     if (type === "Point") {
+//         return [geom.coordinates[1], geom.coordinates[0]];
+//     }
+//     // aplatir les coordonnées
+//     const coords = [];
+//     (function walk(a) {
+//         if (!a) return;
+//         if (typeof a[0] === "number") {
+//             coords.push(a);
+//         } else {
+//             a.forEach(walk);
+//         }
+//     })(geom.coordinates);
+
+//     if (coords.length === 0) return null;
+//     const xs = coords.map(c => c[0]);
+//     const ys = coords.map(c => c[1]);
+//     const x = xs.reduce((a, b) => a + b, 0) / xs.length;
+//     const y = ys.reduce((a, b) => a + b, 0) / ys.length;
+//     return [y, x];
+// }
+
+// -----------------------------
+// écran chargement 
+class LoadingScreen {
+    constructor() {
+        this.state = {
+            isLoading: false
+        };
+    }
+    show() { this.state.isLoading = true; }
+    hide() { this.state.isLoading = false; }
+}
+let loadingScreen = new LoadingScreen();
+
+// écran de chargement (composant)
+const Loading = {
+    template: `
+    <div id="loading" class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+        <div class="row">
+            <div class="spinner-border" role="status">
+                <p class="sr-only">Loading...</p>
+            </div>
+        </div>
+        <div class="row">
+            <p>Chargement en cours ...</p>
+        </div>
+    </div>
+    `
+};
+
+// -----------------------------
+// composant "barre de recherche"
+const SearchBar = {
+    template: `
+        <div id="search-bar-container">
+            <div class="input-group">
+                <i class="la la-search input-icon"></i>
+                <input ref="input" 
+                    class="search-field form-control"
+                    type="search"
+                    placeholder="Rechercher un territoire ..." 
+                    v-model="inputAdress"
+                    @input="onKeypress" 
+                    @keydown.down.prevent="onKeyDown"
+                    @keydown.up.prevent="onKeyUp"
+                    @keyup.enter="onEnter">
+            </div>
+            <div class="autocomplete-suggestions-conainter" v-if="isOpen && suggestionsList.length">
+                <ul class="list-group">
+                    <li class="list-group-item" v-for="(suggestion, i) in suggestionsList"
+                        :key="suggestion.codgeo + '-' + i"
+                        @click.prevent="onClickSuggest(suggestion)"
+                        @mouseover="onMouseover(i)"
+                        @mouseout="onMouseout"
+                        :class="{ 'is-active': i === index }">
+                            {{ suggestion.libgeo }} ({{ suggestion.codgeo }})
+                    </li>
+                </ul>
+            </div>
+        </div>`,
+
+    data() {
+        return {
+            index: -1,
+            inputAdress: '',
+            isOpen: false,
+            suggestionsList: [],
+            data: []
+        };
+    },
+
+    watch: {
+        inputAdress(newVal) {
+            if (!newVal) {
+                this.isOpen = false;
+                this.index = -1;
+                this.suggestionsList = [];
+            }
+        }
+    },
+
+    async mounted() {
+        this._handleClickOutside = this.handleClickOutside.bind(this);
+        document.addEventListener("click", this._handleClickOutside);
+        this._handleEsc = (e) => {
+            if (e.key === "Escape") {
+                this.isOpen = false;
+                this.index = -1;
+            }
+        };
+        document.addEventListener("keyup", this._handleEsc);
+
+        try {
+            const cached = sessionStorage.getItem("session_data1");
+            if (cached) this.data = JSON.parse(cached);
+            else this.data = await getLocalCsvData();
+        } catch (e) {
+            console.error("Erreur lecture données pour recherche :", e);
+            this.data = [];
+        }
+    },
+
+    beforeDestroy() {
+        document.removeEventListener("click", this._handleClickOutside);
+        document.removeEventListener("keyup", this._handleEsc);
+    },
+
+    methods: {
+        onKeypress() {
+            const val = (this.inputAdress || '').trim();
+            if (!val) {
+                this.isOpen = false;
+                this.suggestionsList = [];
+                this.index = -1;
+                return;
+            }
+            this.isOpen = true;
+            const filtered = this.data.filter(e => {
+                return e.libgeo && e.libgeo.toLowerCase().replace(/-/g, " ").includes(val.toLowerCase());
+            });
+            this.suggestionsList = filtered.slice(0, 6);
+            this.index = 0;
+        },
+
+        onKeyUp() {
+            if (this.index > 0) this.index -= 1;
+        },
+
+        onKeyDown() {
+            if (this.index < this.suggestionsList.length - 1) this.index += 1;
+        },
+
+        onMouseover(i) { this.index = i; },
+        onMouseout() { this.index = -1; },
+
+        onEnter() {
+            if (this.suggestionsList[this.index]) {
+                const suggestion = this.suggestionsList[this.index];
+                this.inputAdress = suggestion.libgeo;
+                this.$emit('searchResult', suggestion);
+                this.suggestionsList = [];
+                this.isOpen = false;
+                this.index = -1;
+            }
+        },
+
+        onClickSuggest(suggestion) {
+            this.inputAdress = suggestion.libgeo;
+            this.suggestionsList = [];
+            this.isOpen = false;
+            this.index = -1;
+            this.$emit('searchResult', suggestion);
+        },
+
+        handleClickOutside(evt) {
+            if (!this.$el.contains(evt.target)) {
+                this.isOpen = false;
+                this.index = -1;
+            }
+        }
+    }
+};
+
+// -----------------------------
+// composant texte d'introduction
+const IntroTemplate = {
+    template: `
+        <div>
+            <p>Cette carte interactive recense les territoires accompagnés par l'ANCT pour construire l'action publique locale avec et par les citoyens, au travers d'une offre de services répondant à quatre besoins des collectivités : </p>
+            <p>1. Pour s’outiller et s’inspirer des démarches de coopération et de démocratie locale : nous développons la plateforme web Territoires en commun, développée avec le soutien de la Banque des Territoires et en coopération avec 3 partenaires experts de la coopération et de la démocratie locale.</p>
+            <p>2. Pour coopérer entre collectivités sur des thématiques prioritaires et concevoir des plans d’action avec les citoyens et les acteurs locaux : nous accompagnons les <span class="legend-btn-intro" style="background-color:#f69000" @click="controlLayers('PPTDE')">projets partagés Territoires en commun</span>.</p>
+            <p>3. Pour former élus et agents, pour accompagner ses équipes, pour mener des projets emblématiques et ancrer dans son territoire une culture durable de l’engagement citoyen : nous menons les <span class="legend-btn-intro" style="background-color:#00ac8c" @click="controlLayers('PATDE')">parcours d’accompagnement Territoires d’engagement</span>.</p>
+            <p>4. Pour préciser ses besoins et construire pas à pas une stratégie de participation : nous faisons vivre la <span class="legend-btn-intro" style="background-color:#293173" @click="controlLayers('CCO')">cellule de conseil et d'orientation Territoires d'engagement.</span></p>
+            <br><a id="back-btn" type="button" class="btn btn-primary" href="https://agence-cohesion-territoires.gouv.fr/territoires-dengagement-territoires-en-commun-528" target="_blank">
+                <i class="las la-external-link-alt"></i>
+                En savoir plus
+            </a>
+        </div>`,
+    methods: {
+        controlLayers(demarche) { this.$emit('controlLayers', demarche); }
+    }
+};
+
+// -----------------------------
+// composant style texte fiche 
+const CardInfoTemplate = {
+    template: `
+        <p v-if="element">
+            <span class="subtitle">{{ subtitle }}</span><br>
+            <span class="element">{{ element }}</span>
+        </p>
+    `,
+    props: ['subtitle', 'element']
+};
+
+// -----------------------------
+// composant fiche 
+const CardTemplate = {
+    template: `
+        <div class="card" v-if="obs">
+            <div class="card-header" :style="'background-color:'+obs.color">
+                <span>{{ obs.libgeo }} ({{ obs.codgeo }})</span>
+            </div>
+            <div class="card-body">
+                <info subtitle="Démarche engagée" :element="demarche"></info>
+                <info subtitle="Période d'accompagement" :element="obs.periode" v-if="obs.demarche && obs.demarche != 'CCO'"></info>
+                <info subtitle="Projets partagés" :element="obs.projet_partage" v-if="obs.demarche == 'PPTDE'"></info>
+
+                <div v-if="obs.demarche == 'PATDE' && obs.ingredients && obs.ingredients.length>0">
+                    <span class="subtitle">Ingrédients</span><br>
+                    <ul>
+                        <li v-for="(ingredient, idx) in obs.ingredients" :key="idx" class="element">
+                            <i class="las la-arrow-right"></i> {{ ingredient }}
+                        </li>
+                    </ul><br>
+                </div>
+
+                <a class="link" :href="obs.url" target="_blank" v-if="obs.demarche && obs.demarche != 'CCO'">
+                    <i class="las la-external-link-alt"></i>
+                    Voir la fiche projet
+                </a>
+            </div>
+        </div>
+    `,
+    props: ['obs'],
+    components: { 'info': CardInfoTemplate },
+    computed: {
+        demarche() {
+            if (!this.obs || !this.obs.demarche) return "";
+            switch (this.obs.demarche) {
+                case "PPTDE": return "Territoires en commun : les projets partagés";
+                case "PATDE": return "Territoires d'engagement : les parcours";
+                case "CCO": return "Territoires d'engagement : la cellule de conseil et d'orientation";
+                case "AI": return "Territoires d'engagement : les ateliers interactifs";
+                default: return this.obs.demarche;
+            }
+        }
+    }
+};
+
+// -----------------------------
+// composant sidebar
+const LeafletSidebar = {
+    template: ` 
+    <div id="sidebar" class="leaflet-sidebar collapsed">
+        <div class="leaflet-sidebar-tabs">
+            <ul role="tablist">
+                <li>
+                    <a href="#home" role="tab" title="Accueil">
+                        <i class="las la-home"></i>
+                        <span class="tab-name">Accueil</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#a-propos" role="tab" title="À propos">
+                        <i class="las la-info-circle"></i>
+                        <span class="tab-name">À propos</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="leaflet-sidebar-content">
+            <div class="leaflet-sidebar-header">
+                <span style="color:gray">Carte interactive des</span>
+                <h4>territoires en commun et<br>territoires d'engagement</h4>
+                <span class="leaflet-sidebar-close" @click="$emit('closeSidebar')">
+                    <i class="la la-step-backward"></i>
+                </span>
+            </div>
+
+            <div class="leaflet-sidebar-pane" id="home">
+                <div v-if="!show" class="sidebar-body">
+                    <search-group @searchResult="getResult"></search-group>
+                    <text-intro @controlLayers="emitLayerId"></text-intro>
+                </div>
+
+                <div>
+                    <card :obs="cardContent" v-if="show"></card><br>
+                    <button id="back-btn" type="button" class="btn btn-primary" v-if="show" @click="onClick">
+                        <i class="la la-arrow-left"></i> Retour
+                    </button>
+                </div>
+            </div>
+
+            <div class="leaflet-sidebar-pane" id="a-propos">
+                <a href="https://agence-cohesion-territoires.gouv.fr/" target="_blank">
+                    <img src="img/LOGO-ANCT+Marianne.png" width="100%" style='padding-bottom: 5%;'>
+                </a>
+                <p><b>Source et administration des données :</b> ANCT</p>
+                <p><b>Réalisation  et maintenance de l'outil :</b> ANCT - <a href='https://cartotheque.anct.gouv.fr/cartes' target="_blank">Service cartographie</a></p>
+                <p>Technologies utilisées : Leaflet, Bootstrap, Vue.js 2.7</p>
+                <p>Le code source de cet outil est consultable sur <a href="https://www.github.com/anct-carto/engagement-citoyen" target="_blank">Github</a>.</p>
+            </div>
+        </div>
+    </div>`,
+
+    components: {
+        'search-group': SearchBar,
+        'card': CardTemplate,
+        'text-intro': IntroTemplate
+    },
+
+    props: ['sourceData'],
+
+    data() {
+        return { show: false, cardContent: null };
+    },
+
+    watch: {
+        sourceData(newVal) {
+            this.cardContent = newVal;
+            this.show = !!newVal;
+        }
+    },
+
+    methods: {
+        onClick() {
+            this.cardContent = null;
+            this.show = false;
+            this.$emit("clearMap", true);
+        },
+        getResult(result) { this.$emit('searchResult', result); },
+        emitLayerId(demarche) { this.$emit("controlLayers", demarche); }
+    }
+};
+
+
+const couleursDispositif = {
+    "PPTDE": "#1f77b4",
+    "PATDE": "#ff7f0e",
+    "CCO": "#2ca02c",
+    "AI": "#d62728"
+  };
+  
+  function getCouleur(Dispositif) {
+    return couleursDispositif[Dispositif] || "#cccccc"; // gris si inconnu
+  }
+  
+// -----------------------------
+// composant carte avec interactions associées
+
+const LeafletMap = {
+    template: `         <div>             <sidebar 
+                    ref="sidebar" 
+                    :sourceData="cardContent" 
+                    @clearMap="clearMap" 
+                    @controlLayers="controlLayers"
+                    @searchResult="onSearchResultReception"
+                    @closeSidebar="sidebar.close()">             </sidebar>             <div id="mapid" style="height: 100vh;"></div>         </div>`,
+
+    components: { 'sidebar': LeafletSidebar },
+    
+    data() {
+        return {
+            data: [],
+            geoms: {},
+            joinedFeatures: [],
+            cardContent: null,
+            selectedMarker: null,
+            config: {
+                map: {
+                    container: 'mapid',
+                    attribution: "<a href='https://cartotheque.anct.gouv.fr/' target='_blank'>ANCT</a>",
+                    zoomPosition: 'topright',
+                    scalePosition: 'bottomright',
+                    initialView: {
+                        zoomControl: false,
+                        zoom: 6,
+                        center: [46.413220, 1.219482],
+                        zoomSnap: 0.05,
+                        minZoom: 4.55,
+                        maxZoom: 18,
+                        preferCanvas: true
+                    }
+                }
+            },
+            styles: {
+                basemap: {
+                    dep: { interactive: false, style: { fillColor: "#e8ded2", fillOpacity: 1, color: "white", weight: 0.5, opacity: 1 } },
+                    reg: { interactive: false, style: { fillOpacity: 0, weight: 1.25, color: 'white' } },
+                    drom: { interactive: false, style: { fillOpacity: 0, weight: 0.5, color: '#293173' } }
+                },
+                categories: { colors: ['#039d7b', '#f69000', '#293173', '#ec6555'], values: ['PATDE', 'PPTDE', 'CCO', 'AI'], labels: [] },
+                features: {
+                    default: { radius: 6, fill: true, fillOpacity: 1, color: "white", weight: 1 },
+                    clicked: { radius: 10, fillOpacity: 1, color: "white", opacity: 0.75, weight: 7 }
+                },
+                tooltip: {
+                    default: { direction: "top", sticky: true, className: 'leaflet-tooltip', opacity: 1, offset: [0, -15], permanent: false },
+                    clicked: { direction: "top", className: 'leaflet-tooltip-clicked' }
+                }
+            }
+        };
+    },
+    
+    computed: {
+        map() {
+            if (this._map) return this._map;
+            const map = L.map(this.config.map.container, this.config.map.initialView);
+            map.attributionControl.addAttribution(this.config.map.attribution);
+            L.control.zoom({ position: this.config.map.zoomPosition }).addTo(map);
+            L.control.scale({ position: this.config.map.scalePosition, imperial: false }).addTo(map);
+            L.control.fullscreen({ position: 'topright', forcePseudoFullScreen: true, title: 'Afficher la carte en plein écran' }).addTo(map);
+            map.on("click", () => this.clearMap());
+            this._map = map;
+            return map;
+        },
+    
+        baseMapLayer() { if (this._baseMapLayer) return this._baseMapLayer; this._baseMapLayer = L.layerGroup({ className: 'basemap-layer', interactive: false }).addTo(this.map); return this._baseMapLayer; },
+        pinLayer() { if (this._pinLayer) return this._pinLayer; this._pinLayer = L.layerGroup({ className: 'pin-layer' }).addTo(this.map); return this._pinLayer; },
+        pptdeLayer() { if (this._pptdeLayer) return this._pptdeLayer; this._pptdeLayer = L.layerGroup({ className: 'points pptde' }).addTo(this.map); return this._pptdeLayer; },
+        patdeLayer() { if (this._patdeLayer) return this._patdeLayer; this._patdeLayer = L.layerGroup({ className: 'points patde' }).addTo(this.map); return this._patdeLayer; },
+        ccoLayer()   { if (this._ccoLayer) return this._ccoLayer; this._ccoLayer = L.layerGroup({ className: 'points cco' }).addTo(this.map); return this._ccoLayer; },
+        aiLayer()    { if (this._aiLayer) return this._aiLayer; this._aiLayer = L.layerGroup({ className: 'points ai' }).addTo(this.map); return this._aiLayer; },
+        labelLayer() { if (this._labelLayer) return this._labelLayer; this._labelLayer = L.layerGroup({ className: 'label-layer' }).addTo(this.map); return this._labelLayer; }
+    },
+    
+    async mounted() {
+        loadingScreen.show();
+        await this.createBasemap();
+        this.displayToponym();
+    
+        try { this.data = await this.loadCSV("data/liste_tec_te.csv"); } 
+        catch (err) { console.error("Erreur CSV:", err); loadingScreen.hide(); return; }
+    
+        if (!this.data || this.data.length === 0) { loadingScreen.hide(); return; }
+    
+        await this.loadGeometriesAndJoin();
+        this.setupLayerControls();
+        loadingScreen.hide();
+    },
+    
+    methods: {
+        async loadCSV(file) {
+            const res = await fetch(file);
+            const text = await res.text();
+            const rows = text.split("\n").map(r => r.split(";"));
+            const headers = rows.shift();
+            return rows.map(r => headers.reduce((acc, h, i) => { acc[h] = r[i]; return acc; }, {}));
+        },
+    
+        async loadGeom(file) { return await loadGeoJson(file); },
+    
+        async createBasemap() {
+            const depGeom = await this.loadGeom("data/geom_dep.geojson");
+            const regGeom = await this.loadGeom("data/geom_reg.geojson");
+            const sepDromGeom = await this.loadGeom("data/cercles_drom.geojson");
+            if (depGeom) new L.GeoJSON(depGeom, this.styles.basemap.dep).addTo(this.baseMapLayer);
+            if (regGeom) new L.GeoJSON(regGeom, this.styles.basemap.reg).addTo(this.baseMapLayer);
+            if (sepDromGeom) new L.GeoJSON(sepDromGeom, this.styles.basemap.drom).addTo(this.baseMapLayer);
+            if (regGeom) this.map.fitBounds(new L.GeoJSON(regGeom).getBounds());
+        },
+    
+        async loadGeometriesAndJoin() {
+            const geoPromises = {
+                commune: loadGeoJson("data/geom_communes.geojson"),
+                epci: loadGeoJson("data/geom_epci.geojson"),
+                departement: loadGeoJson("data/geom_dep.geojson"),
+                region: loadGeoJson("data/geom_reg.geojson")
+            };
+    
+            const results = await Promise.allSettled(Object.values(geoPromises));
+            const keys = Object.keys(geoPromises);
+            keys.forEach((k, i) => {
+                const r = results[i];
+                this.geoms[k] = r.status === "fulfilled" ? { fc: r.value, index: (r.value.features || []).reduce((acc, f) => { const code=f.properties?.codgeo; if(code) acc[code]=f; return acc; }, {}) } 
+                                                          : { fc: { type: "FeatureCollection", features: [] }, index: {} };
+            });
+    
+            this.joinedFeatures = [];
+            this.data.forEach(row => {
+                const echelon = (row.echelon || '').toLowerCase().trim();
+                const code = row.codgeo;
+                const geomSet = this.geoms[echelon];
+                if (geomSet && geomSet.index[code]) {
+                    const feat = JSON.parse(JSON.stringify(geomSet.index[code]));
+                    feat.properties = Object.assign({}, feat.properties || {}, row);
+                    this.joinedFeatures.push(feat);
+                }
+            });
+    
+            this.renderPoints();
+        },
+    
+        renderPoints() {
+            this.joinedFeatures.forEach(f => {
+                const layer = this.getLayerByCategory(f.properties.type);
+                if (!layer) return;
+    
+                const coords = f.geometry.coordinates.slice().reverse();
+                const marker = L.circleMarker(coords, this.styles.features.default)
+                    .bindTooltip(`${f.properties.nom || ''} (${f.properties.type || ''})`, this.styles.tooltip.default)
+                    .addTo(layer);
+    
+                marker.on("click", () => {
+                    if (this.selectedMarker) this.selectedMarker.setStyle(this.styles.features.default);
+                    this.selectedMarker = marker;
+                    marker.setStyle(this.styles.features.clicked);
+                    this.cardContent = f.properties;
+                    this.$refs.sidebar.open(f.properties);
+                });
+            });
+        },
+    
+        getLayerByCategory(type) {
+            switch ((type || '').toUpperCase()) {
+                case 'PPTDE': return this.pptdeLayer;
+                case 'PATDE': return this.patdeLayer;
+                case 'CCO': return this.ccoLayer;
+                case 'AI': return this.aiLayer;
+                default: return null;
+            }
+        },
+    
+        setupLayerControls() {
+            const overlays = { "PATDE": this.patdeLayer, "PPTDE": this.pptdeLayer, "CCO": this.ccoLayer, "AI": this.aiLayer };
+            L.control.layers({}, overlays).addTo(this.map);
+        },
+    
+        clearMap() {
+            this.pinLayer.clearLayers();
+            this.map.closePopup();
+            if (this.selectedMarker) {
+                this.selectedMarker.setStyle(this.styles.features.default);
+                this.selectedMarker = null;
+            }
+            this.cardContent = null;
+            this.$refs.sidebar.close();
+        }
+    } 
+    };
+    
+    
+
+// -----------------------------
+// App root
+const App = {
+    template: `
+        <div>
+            <loading id="loading" v-if="state.isLoading"></loading>
+            <leaflet-map ref="map"></leaflet-map>
+        </div>
+    `,
+    components: { 'leaflet-map': LeafletMap, 'loading': Loading },
+    data() { return { state: loadingScreen.state }; }
+};
+
+// instance vue
+new Vue({
+    el: '#app',
+    components: { 'app': App }
+});
+
+// -----------------------------
+// Fonctions universelles
+
+function preventDrag(div, map) {
+    try {
+        const container = div.getContainer();
+        container.addEventListener('mouseover', function () { if (map && map.dragging) map.dragging.disable(); });
+        container.addEventListener('mouseout', function () { if (map && map.dragging) map.dragging.enable(); });
+    } catch (e) { console.warn("preventDrag: impossible d'attacher listeners:", e); }
+}
+
+function LToponym(sourceData, statut) {
+    return new L.GeoJSON(sourceData, {
+        pointToLayer: (feature, latlng) => L.marker(latlng, {
+            icon: createLabelIcon("labelClass", feature.properties.libgeom),
+            interactive: false,
+            className: "regLabels"
+        }),
+        filter: (feature) => feature.properties && feature.properties.STATUT == statut,
+        className: "labels",
+        rendererFactory: L.canvas()
+    });
+}
+
+function createLabelIcon(labelClass, labelText) {
+    return L.divIcon({ className: svgText(labelClass), html: svgText(labelText) });
+}
+
+function svgText(txt) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><text x="0" y="10">' + txt + '</text></svg>';
+}

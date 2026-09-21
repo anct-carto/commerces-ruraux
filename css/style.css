@@ -1,0 +1,392 @@
+:root {
+	--bleu-anct:#293173;
+	--bleu-second:#5770be;
+	--bleu-etat:rgb(0,0,145); 
+	--bleu-etat-hover:rgb(18,18,255); 
+	--vert-anct:#00ac8c;
+	--jaune-anct:#ffe800;
+	--text-color:#3a3a3a;
+}
+
+body {
+	padding: 0;
+	margin:0;
+}
+
+
+html, body, #mapid {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	font-family: 'Marianne-regular', Arial, Helvetica, sans-serif !important;
+	font-size: 0.9em;
+	color:var(--text-color);
+	background: white;
+}
+
+/* taille des pictos */
+body i {
+	font-size: 1.3em !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 								SCREEN LOADING					   	 		  */													
+/* -------------------------------------------------------------------------- */
+
+
+
+#loading {
+	background-color: rgba(0,0,0,.75);
+	color:white;
+	padding:100px;
+	position: absolute;
+	display: block;
+	width: 100%;
+	height: 100%;
+	z-index: 10000 !important;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* 								LEAFLET SIDEBAR					   	 		  */													
+/* -------------------------------------------------------------------------- */
+
+#sidebar {
+	position: absolute;
+}
+
+/* longueur */
+@media (min-width: 1200px) {
+	.leaflet-sidebar, .leaflet-sidebar-header {
+		width: 550px;
+		max-width: 550px;
+	}
+}
+
+/* header panneau avec titre carte */
+.leaflet-sidebar-header {
+	background: none;
+	font-family: 'Marianne-Bold';
+	text-transform: uppercase;
+	color:var(--vert-anct);
+	font-size: 14px;
+	margin:0px 10px 15px 5px;
+	height: auto;
+	z-index: 0;
+}
+
+.leaflet-sidebar-close {
+	color:black;
+	z-index: 10000 !important;
+}
+
+
+/* sidebar */
+.leaflet-sidebar-tabs {
+	background-color: var(--vert-anct);
+	background: linear-gradient(180deg, rgba(0,172,140,1) 0%, rgba(169,242,229,1) 100%); 
+	box-shadow: 2px 0px 2px 0px #656565;
+}
+
+/* boutons sidebar */
+/* boutons sidebar */
+.leaflet-sidebar-tabs > ul > li {
+	color:white;
+}
+
+.leaflet-sidebar-tabs > ul > li.active,
+.leaflet-sidebar-tabs > ul > li.active:hover {
+	background-color: rgb(249, 249, 251);
+	color:var(--bleu-anct);
+	border-left: solid 3px var(--jaune-anct);	 
+}
+
+.leaflet-sidebar-tabs > ul > li:hover {
+	background-color: rgba(0,0,0,.25);
+	color:white;
+	transition: .2s
+} 
+
+/* nom onglet au survol d'un bouton */
+.tab-name {
+	position: absolute;
+	display: none;
+	z-index: 10000;
+	left: 50px;
+	background: rgba(0,0,0,.8) !important;
+	font-family: 'Marianne-Bold';
+	font-size: .9rem;
+	text-transform: uppercase;
+	text-align: center;
+	color:white !important;
+	width: 100px;
+	border-radius: 3px;
+}
+
+.leaflet-sidebar-tabs ul li a:hover .tab-name{
+	display: inline-block;
+ }
+ 
+ .leaflet-sidebar-tabs ul li .tab-name:before{
+   content: "";
+   position: absolute;
+   top: 50%;
+   right: 100%; /* To the left of the tooltip */
+   margin-top: -5px;
+   border-width: 5px;
+   border-style: solid;
+   border-color: transparent rgba(0,0,0,.8) transparent transparent;
+}
+
+.legend-btn-intro {
+	color:white;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-bottom: 2px;
+	cursor: pointer;
+}
+
+.legend-btn-intro:hover {
+	text-decoration: underline 2px white;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 									LEAFLET MAP					   	 		  */													
+/* -------------------------------------------------------------------------- */
+
+
+.leaflet-legend {
+	font-family: 'Abel-Regular';
+	background-color: rgba(255,255,255,.9);
+	padding: 10px;
+	box-shadow: 0 1px 10px rgba(0,0,0,.25), 0 2px 4px rgba(0,0,0,.06);
+	border-radius: 4px;
+}
+
+/* legend */
+.leaflet-control-layers {
+	font-size: 10px;
+}
+
+/* style checkbox */
+/* .leaflet-control-layers-overlays input[type="checkbox"] {
+	display: none;
+}
+
+.leaflet-control-layers-overlays.input[type=checkbox] + label {
+	background: url('/lib/line-awesome-1.3.0/svg/eye.svg') no-repeat;
+	display: inline-block;
+}
+
+.leaflet-control-layers-overlays.input[type=checkbox]:checked + label {
+	background: url('/lib/line-awesome-1.3.0/svg/eye-slash.svg') no-repeat;
+	display: inline-block;
+	height: 50px;
+	width: 50px;
+} */
+
+/* chef lieux */
+.leaflet-marker-pane {
+	left:-10px;
+	opacity: 0.75;
+	font-family: 'Abel-Regular';
+	font-size: .9em;
+	font-weight: 600;
+	border-color:white;
+	justify-content: center;
+	text-align: center;
+	text-shadow: -0.5px 0 white, 0 0.5px white, 0.5px 0 white, 0 -0.5px white;
+  }
+
+.leaflet-tooltip-top:before, 
+.leaflet-tooltip-bottom:before {
+	border: none !important;
+}
+
+
+
+.leaflet-tooltip {
+	/* white-space:normal ; */
+	text-align: center;
+	border:none !important;
+	color: white;
+	font-family: 'abel-regular';
+	font-weight:900;
+	display: block;
+	padding:0;
+}
+
+.leaflet-tooltip > span {
+	display: block;
+	padding:2px 5px;
+	border-radius: 3px;
+}
+
+.leaflet-tooltip-info {
+	font-weight: normal !important;
+}
+
+
+
+/* -------------------------------------------------------------------------- */
+/* 									INTRO							 		  */
+/* -------------------------------------------------------------------------- */
+
+#logo-programme {
+	width: 100%;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* 									SEARCH BAR						 		  */
+/* -------------------------------------------------------------------------- */
+
+#search-bar-container {
+	position: relative;
+	margin-bottom: 20px;
+}
+
+.input-icon {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	z-index: 10;
+	font-size: 1.15em;
+	color:var(--bleu-anct);
+}
+
+.search-field {
+	text-indent: 20px;
+	border-top-left-radius: 3px !important;
+	border-bottom-left-radius: 3px !important;
+}
+
+ul {
+	list-style: none;	
+	/* display: inline-block;
+	vertical-align: top; */
+}
+
+/* li {
+	/* position: relative;
+	padding-bottom: 5px; 
+} */
+
+.list-group {
+	width: 100%;
+	position: absolute;
+}
+
+.list-group-item {
+	background-color: white;
+	cursor: pointer;
+	list-style: none;
+	/* transition: .05s; */
+	box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+}
+
+.list-group-item.is-active {
+	background-color: var(--jaune-anct);
+	font-family: 'Marianne-Bold';
+	/* color:white; */
+	display: block;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* 								 	CARDS						   	 		  */													
+/* -------------------------------------------------------------------------- */
+
+
+
+.fal {
+	align-items: center;
+}
+
+
+.card {
+	background-color: white;
+}
+
+
+.card-header {
+	color:white;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	font-family: 'Marianne-Bold';
+	font-size: 1.6em;
+	text-transform: uppercase;
+}
+
+.card-body ul {
+	padding-left: 9px;
+	margin-bottom: 7px;
+}
+
+.subtitle {
+	color:gray;
+	font-size: .95em;
+}
+
+.element {
+	font-family: 'Marianne-Bold';
+	font-size: 1.3em;
+}
+
+/* bouton retour */
+
+#back-btn {
+	background-color: var(--jaune-anct);
+	color:var(--bleu-anct);
+	font-family: 'Marianne-Bold';
+	border: none;
+	border-radius: 0;
+	text-transform: uppercase;
+	margin: 0;
+}
+
+#back-btn:hover {
+	background-color: var(--bleu-anct);
+	color:var(--jaune-anct)
+}
+
+/* -------------------------------------------------------------------------- */
+/* 								 URL LIENS						   	 		  */													
+/* -------------------------------------------------------------------------- */
+
+.link {
+	font-size: 1.1em;
+	color:var(--text-color) !important;
+	text-decoration: none;
+	border-bottom: solid 1px var(--text-color);
+}
+
+.link:hover {
+	border-bottom: solid 2px var(--text-color) !important;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* 								 SCROLL BAR						   	 		  */													
+/* -------------------------------------------------------------------------- */
+
+/* width */
+::-webkit-scrollbar {
+	width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+	background: #f1f1f1; 
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+	background: #888; 
+	border-radius: 2px;
+  }
+  
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+	background: #555; 
+  }
