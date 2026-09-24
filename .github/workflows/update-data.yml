@@ -38,7 +38,7 @@ jobs:
       - name: Générer le fichier de données
         env:
           GRIST_API_KEY: ${{ secrets.GRIST_API_KEY }}
-        run: node src/server.js
+        run: node src/update-data.js
 
       - name: Commit et push si le fichier a changé
         run: |
