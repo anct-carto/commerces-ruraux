@@ -14,7 +14,6 @@
 //   GRIST_API_KEY=xxxx node src/update-data.js
 // (ou via un fichier .env à la racine du projet)
 
-const fetch = require("node-fetch");
 const fs = require("fs");
 const path = require("path");
 
