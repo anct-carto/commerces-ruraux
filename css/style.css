@@ -1,368 +1,244 @@
-:root {
-	--bleu-anct:#293173;
-	--bleu-second:#5770be;
-	--bleu-etat:rgb(0,0,145); 
-	--bleu-etat-hover:rgb(18,18,255); 
-	--vert-anct:#00ac8c;
-	--jaune-anct:#ffe800;
-	--text-color:#3a3a3a;
+/* =====================================================================
+   POLICE MARIANNE
+   ===================================================================== */
+
+   @font-face {
+    font-family: "Marianne";
+    src: url("lib/fonts/Marianne-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
 }
 
+@font-face {
+    font-family: "Marianne";
+    src: url("lib/fonts/Marianne-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+}
+
+html,
 body {
-	padding: 0;
-	margin:0;
-}
-
-
-html, body, #mapid {
-	height: 100%;
-	width: 100%;
-	position: absolute;
-	font-family: 'Marianne-regular', Arial, Helvetica, sans-serif !important;
-	font-size: 0.9em;
-	color:var(--text-color);
-	background: white;
-}
-
-/* taille des pictos */
-body i {
-	font-size: 1.3em !important;
-}
-
-/* -------------------------------------------------------------------------- */
-/* 								SCREEN LOADING					   	 		  */													
-/* -------------------------------------------------------------------------- */
-
-
-
-#loading {
-	background-color: rgba(0,0,0,.75);
-	color:white;
-	padding:100px;
-	position: absolute;
-	display: block;
-	width: 100%;
-	height: 100%;
-	z-index: 10000 !important;
-}
-
-
-/* -------------------------------------------------------------------------- */
-/* 								LEAFLET SIDEBAR					   	 		  */													
-/* -------------------------------------------------------------------------- */
-.leaflet-sidebar-content {
+    margin: 0;
     padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: "Marianne", Arial, sans-serif;
+}
+
+#map {
+    width: 100%;
+    height: 100vh;
+}
+
+/* =====================================================================
+   TITRE PRINCIPAL DE LA CARTE
+   ===================================================================== */
+
+.map-title {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: white;
+    padding: 8px 20px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+    font-family: "Marianne", Arial, sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.legend {
+    background: white;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+}
+
+/* =====================================================================
+   SIDEBAR
+   ===================================================================== */
+
+.leaflet-sidebar {
+    background-color: #ffffff;
+}
+
+.leaflet-sidebar-content {
+    padding: 0 55px 15px 0 !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+    background-color: #ffffff !important;
 }
 
 .leaflet-sidebar-pane {
-    padding: 20px;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    background-color: #ffffff !important;
 }
 
-.leaflet-sidebar-pane h2 {
+/* Élargissement de la sidebar uniquement quand elle est ouverte */
+.leaflet-sidebar:not(.collapsed) {
+    width: 550px !important;
+}
+
+/* =====================================================================
+   TYPOGRAPHIE
+   ===================================================================== */
+
+.leaflet-sidebar-header,
+#sidebar-title,
+h2,
+h3 {
+    font-family: "Marianne", sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+}
+
+.leaflet-sidebar-content p,
+.leaflet-sidebar-content td,
+.leaflet-sidebar-content th,
+.leaflet-sidebar-content div {
+    font-family: "Marianne", sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+}
+
+.leaflet-sidebar-content p,
+.leaflet-sidebar-content li {
+    text-align: justify;
+}
+
+.leaflet-sidebar-content p,
+.leaflet-sidebar-content div,
+.leaflet-sidebar-content li,
+.leaflet-sidebar-content td,
+.leaflet-sidebar-content th {
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+    max-width: 100% !important;
+}
+
+.leaflet-sidebar-content table {
+    width: 100% !important;
+    table-layout: fixed !important;
+}
+
+table th {
+    width: 120px;
+}
+
+#home-content,
+#commune-card,
+.leaflet-sidebar-pane > p {
+    padding-left: 8px;
+    box-sizing: border-box;
+}
+
+#home-title {
+    text-align: left !important;
+    font-weight: bold;
+    font-size: 22px;
+    margin-bottom: 10px;
+	line-height: 1.15
+}
+
+/* =====================================================================
+   COULEURS PERSONNALISÉES SIDEBAR (vert #398373)
+   ===================================================================== */
+
+/* Bande d'en-tête en haut de chaque panneau de la sidebar */
+.leaflet-sidebar-header {
+    background-color: #398373 !important;
+    color: #ffffff !important;
+    text-align: left !important;
+    height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+    padding-left: 8px !important;
+}
+
+/* Header spécifique du panneau Accueil : sur une seule ligne */
+#home .leaflet-sidebar-header {
+    text-transform: uppercase;
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Bande des onglets à gauche de la sidebar */
+.leaflet-sidebar-tabs {
+    background-color: rgba(57, 131, 115, 0.5) !important;
+}
+
+/* Onglets de gauche : dimensions + survol + onglet actif */
+.leaflet-sidebar-tabs > ul > li {
+    height: 48px;
+}
+
+.leaflet-sidebar-tabs > ul > li > a {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leaflet-sidebar-tabs > ul > li:hover,
+.leaflet-sidebar-tabs > ul > li.active {
+    background-color: #398373 !important;
+}
+
+.leaflet-sidebar-tabs > ul > li:hover > a,
+.leaflet-sidebar-tabs > ul > li.active > a,
+.leaflet-sidebar-tabs > ul > li:hover > a svg,
+.leaflet-sidebar-tabs > ul > li.active > a svg {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+/* Bouton "Retour à l'accueil" : couleur + position plus basse */
+#close-card {
+    background-color: #398373 !important;
+    border-color: #398373 !important;
+    color: #ffffff !important;
+    margin-top: 40px;
     margin-bottom: 20px;
 }
 
-.card {
-    border-radius: 12px;
+/* =====================================================================
+   CONTENU ACCUEIL (anciens styles inline)
+   ===================================================================== */
+
+.home-logo {
+    text-align: left;
+    margin-bottom: 20px;
 }
 
-.table th {
-    width: 120px;
-    font-weight: 600;
+.home-logo img {
+    max-width: 100%;
+    height: auto;
 }
 
-/* nom onglet au survol d'un bouton */
-.tab-name {
-	position: absolute;
-	display: none;
-	z-index: 10000;
-	left: 50px;
-	background: rgba(0,0,0,.8) !important;
-	font-family: 'Marianne-Bold';
-	font-size: .9rem;
-	text-transform: uppercase;
-	text-align: center;
-	color:white !important;
-	width: 100px;
-	border-radius: 3px;
-}
-
-.leaflet-sidebar-tabs ul li a:hover .tab-name{
-	display: inline-block;
- }
- 
- .leaflet-sidebar-tabs ul li .tab-name:before{
-   content: "";
-   position: absolute;
-   top: 50%;
-   right: 100%; /* To the left of the tooltip */
-   margin-top: -5px;
-   border-width: 5px;
-   border-style: solid;
-   border-color: transparent rgba(0,0,0,.8) transparent transparent;
-}
-
-.legend-btn-intro {
-	color:white;
-	padding-left: 5px;
-	padding-right: 5px;
-	padding-bottom: 2px;
-	cursor: pointer;
-}
-
-.legend-btn-intro:hover {
-	text-decoration: underline 2px white;
-}
-
+/* Fiche projet (cachée au départ, affichée en JS) */
 #commune-card {
-    animation: fadeIn .2s ease;
+    display: none;
+}
+
+
+/* Décale le texte du panneau "En savoir plus" de 3 lignes environ */
+#info > p:first-of-type {
+    margin-top: 100px;
+}
+
+/* Descend un peu la card de détails de la commune */
+#sidebar-content .card {
+    margin-top: 30px;
 }
 
 #sidebar-title {
-    margin-bottom: 15px;
+    margin-top: 30px;
 }
-
-#sidebar-content table th {
-    width: 120px;
-}
-
-#close-card {
-    margin-bottom: 15px;
-}
-
-@keyframes fadeIn {
-
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-
-}
-
-
-/* -------------------------------------------------------------------------- */
-/* 									LEAFLET MAP					   	 		  */													
-/* -------------------------------------------------------------------------- */
-
-
-.leaflet-legend {
-	font-family: 'Abel-Regular';
-	background-color: rgba(255,255,255,.9);
-	padding: 10px;
-	box-shadow: 0 1px 10px rgba(0,0,0,.25), 0 2px 4px rgba(0,0,0,.06);
-	border-radius: 4px;
-}
-
-/* legend */
-.leaflet-control-layers {
-	font-size: 10px;
-}
-
-/* chef lieux */
-.leaflet-marker-pane {
-	left:-10px;
-	opacity: 0.75;
-	font-family: 'Abel-Regular';
-	font-size: .9em;
-	font-weight: 600;
-	border-color:white;
-	justify-content: center;
-	text-align: center;
-	text-shadow: -0.5px 0 white, 0 0.5px white, 0.5px 0 white, 0 -0.5px white;
-  }
-
-.leaflet-tooltip-top:before, 
-.leaflet-tooltip-bottom:before {
-	border: none !important;
-}
-
-
-
-.leaflet-tooltip {
-	/* white-space:normal ; */
-	text-align: center;
-	border:none !important;
-	color: white;
-	font-family: 'abel-regular';
-	font-weight:900;
-	display: block;
-	padding:0;
-}
-
-.leaflet-tooltip > span {
-	display: block;
-	padding:2px 5px;
-	border-radius: 3px;
-}
-
-.leaflet-tooltip-info {
-	font-weight: normal !important;
-}
-
-
-
-/* -------------------------------------------------------------------------- */
-/* 									INTRO							 		  */
-/* -------------------------------------------------------------------------- */
-
-#logo-programme {
-	width: 100%;
-}
-
-
-/* -------------------------------------------------------------------------- */
-/* 									SEARCH BAR						 		  */
-/* -------------------------------------------------------------------------- */
-
-#search-bar-container {
-	position: relative;
-	margin-bottom: 20px;
-}
-
-.input-icon {
-	position: absolute;
-	top: 10px;
-	left: 10px;
-	z-index: 10;
-	font-size: 1.15em;
-	color:var(--bleu-anct);
-}
-
-.search-field {
-	text-indent: 20px;
-	border-top-left-radius: 3px !important;
-	border-bottom-left-radius: 3px !important;
-}
-
-ul {
-	list-style: none;	
-	/* display: inline-block;
-	vertical-align: top; */
-}
-
-/* li {
-	/* position: relative;
-	padding-bottom: 5px; 
-} */
-
-.list-group {
-	width: 100%;
-	position: absolute;
-}
-
-.list-group-item {
-	background-color: white;
-	cursor: pointer;
-	list-style: none;
-	/* transition: .05s; */
-	box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
-}
-
-.list-group-item.is-active {
-	background-color: var(--jaune-anct);
-	font-family: 'Marianne-Bold';
-	/* color:white; */
-	display: block;
-}
-
-
-/* -------------------------------------------------------------------------- */
-/* 								 	CARDS						   	 		  */													
-/* -------------------------------------------------------------------------- */
-
-
-
-.fal {
-	align-items: center;
-}
-
-
-.card {
-	background-color: white;
-}
-
-
-.card-header {
-	color:white;
-	padding-top: 10px;
-	padding-bottom: 10px;
-	font-family: 'Marianne-Bold';
-	font-size: 1.6em;
-	text-transform: uppercase;
-}
-
-.card-body ul {
-	padding-left: 9px;
-	margin-bottom: 7px;
-}
-
-.subtitle {
-	color:gray;
-	font-size: .95em;
-}
-
-.element {
-	font-family: 'Marianne-Bold';
-	font-size: 1.3em;
-}
-
-/* bouton retour */
-
-#back-btn {
-	background-color: var(--jaune-anct);
-	color:var(--bleu-anct);
-	font-family: 'Marianne-Bold';
-	border: none;
-	border-radius: 0;
-	text-transform: uppercase;
-	margin: 0;
-}
-
-#back-btn:hover {
-	background-color: var(--bleu-anct);
-	color:var(--jaune-anct)
-}
-
-/* -------------------------------------------------------------------------- */
-/* 								 URL LIENS						   	 		  */													
-/* -------------------------------------------------------------------------- */
-
-.link {
-	font-size: 1.1em;
-	color:var(--text-color) !important;
-	text-decoration: none;
-	border-bottom: solid 1px var(--text-color);
-}
-
-.link:hover {
-	border-bottom: solid 2px var(--text-color) !important;
-}
-
-
-/* -------------------------------------------------------------------------- */
-/* 								 SCROLL BAR						   	 		  */													
-/* -------------------------------------------------------------------------- */
-
-/* width */
-::-webkit-scrollbar {
-	width: 5px;
-}
-
-/* Track */
-::-webkit-scrollbar-track {
-	background: #f1f1f1; 
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-	background: #888; 
-	border-radius: 2px;
-  }
-  
-  /* Handle on hover */
-  ::-webkit-scrollbar-thumb:hover {
-	background: #555; 
-  }

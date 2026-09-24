@@ -8,6 +8,9 @@
 
     <title>Carte Commerce Rural</title>
 
+    <!-- Favicon -->
+	<link rel="shortcut icon" href="img/favicon.ico" type="image/ico"/>
+
     <!-- Bootstrap -->
     <link href="lib/bootstrap.min.css" rel="stylesheet">
 
@@ -17,139 +20,373 @@
     <!-- Leaflet Sidebar -->
     <link rel="stylesheet" href="lib/leaflet-sidebar.min.css">
 
-    <!-- Style -->
-    <style>
-
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        #map {
-            width: 100%;
-            height: 100vh;
-        }
-
-        .legend {
-            background: white;
-            padding: 10px;
-            border-radius: 4px;
-            box-shadow: 0 0 10px rgba(0,0,0,.2);
-        }
-
-        .leaflet-sidebar-content {
-            padding: 15px;
-        }
-
-        table th {
-            width: 120px;
-        }
-
-    </style>
+    <!-- Style du projet -->
+    <link rel="stylesheet" href="css/style.css">
 
 </head>
 
+
 <body>
 
-    <!-- Dev de la structure de la sidebar -->
+    <!-- =====================================================================
+         TITRE PRINCIPAL DE LA CARTE
+         ===================================================================== -->
+
+    <!-- <div class="map-title">
+        Carte Commerce Rural
+    </div> -->
+
+
+    <!-- =====================================================================
+         SIDEBAR
+         ===================================================================== -->
+
     <div id="sidebar" class="leaflet-sidebar collapsed">
 
+
+        <!-- =================================================================
+             ONGLETS DE LA SIDEBAR
+             ================================================================= -->
+
         <div class="leaflet-sidebar-tabs">
+
             <ul role="tablist">
-    
+
+                <!-- ACCUEIL -->
                 <li>
                     <a href="#home" role="tab">
-                        🏠
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="#398373"
+                            class="bi bi-house-fill"
+                            viewBox="0 0 16 16"
+                        >
+                            <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293z"/>
+                            <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293z"/>
+                        </svg>
+
                     </a>
                 </li>
-    
+
+
+                <!-- INFO -->
                 <li>
                     <a href="#info" role="tab">
-                        ℹ️
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#398373" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                          </svg>
                     </a>
                 </li>
-    
+
             </ul>
+
         </div>
-    
+
+
+        <!-- =================================================================
+             CONTENU DE LA SIDEBAR
+             ================================================================= -->
+
         <div class="leaflet-sidebar-content">
-    
-            <!-- ACCUEIL -->
-    
+
+
+            <!-- =============================================================
+                 ACCUEIL
+                 ============================================================= -->
+
             <div class="leaflet-sidebar-pane" id="home">
-    
-                <h2 class="leaflet-sidebar-header">
-                    Commerce rural
-                </h2>
-    
+
+                <h1 class="leaflet-sidebar-header">
+                    Fonds de soutien au commerce rural
+                </h1>
+
+
+                <!-- CONTENU ACCUEIL -->
+
                 <div id="home-content">
-    
-                    <p>
-                        Cette carte présente les projets soutenus dans le cadre
-                        du Fonds de soutien au commerce rural.
+
+
+                    <!-- LOGO ANCT + MARIANNE -->
+
+                    <div class="home-logo">
+
+                        <img
+                            src="img/LOGO-ANCT+Marianne.png"
+                            alt="ANCT et Marianne"
+                        >
+
+                    </div>
+
+
+                    <!-- TITRE DE LA PAGE D'ACCUEIL -->
+
+                    <p id="home-title">
+                        <br>
+                        Accompagnement des territoires via le fonds de soutien
+                        au commerce rural
                     </p>
-    
+
+
+                    <!-- TEXTE D'ACCUEIL -->
+
                     <p>
-                        Cliquez sur une commune pour consulter sa fiche détaillée.
+                        Ce fonds a vocation à financer des projets visant
+                        l'installation d'un commerce sédentaire ou non
+                        sédentaire multi-services afin de contribuer au
+                        maintien d’une offre de consommation courante pour
+                        la population, au renforcement des liens sociaux,
+                        à l'attractivité des territoires, à la réduction
+                        des trajets émetteurs de CO2.
                     </p>
-    
+
+
+                    <!-- TERRITOIRES CIBLÉS -->
+
+                    <p>
+                        <strong>Territoires ciblés :</strong>
+                    </p>
+
+                    <p>
+                        Communes dépourvues de commerce ou dont les dernières
+                        activités ne répondent plus aux besoins de première
+                        nécessité de la population et dont l'offre commerciale
+                        la plus proche est située à plus de dix minutes en voiture.
+                    </p>
+
+                    <ul>
+
+                        <li>
+                            En métropole : Bourg rural, Rural à habitat
+                            dispersé, Rural à habitat très dispersé
+                        </li>
+
+                        <li>
+                            Dans les DROM : analyse au cas par cas
+                        </li>
+
+                    </ul>
+
+
+                    <!-- BÉNÉFICIAIRES -->
+
+                    <p>
+                        <strong>Bénéficiaires :</strong>
+                        entités publiques ou privées
+                    </p>
+
+
+                    <!-- NATURE DES AIDES -->
+
+                    <p>
+                        <strong>Nature des aides :</strong>
+                    </p>
+
+                    <ul>
+
+                        <li>
+                            <strong>
+                                Acquisition des locaux et travaux relatifs
+                                à la remise en état du local :
+                            </strong>
+
+                            prise en charge du déficit d'opération à hauteur
+                            de 50 %, dans une limite de 50 000 €.
+                        </li>
+
+
+                        <li>
+                            <strong>
+                                Agencement des locaux et acquisition du
+                                matériel professionnel :
+                            </strong>
+
+                            prise en charge à hauteur de 50 % des dépenses
+                            d'investissement dans une limite de 20 000 €
+                            (bonus de 5 000 € pour les projets exemplaires
+                            en matière de développement durable ou
+                            d'innovations sociale ou sociétale).
+                        </li>
+
+
+                        <li>
+                            <strong>
+                                Acquisition d'un véhicule professionnel
+                                de tournée :
+                            </strong>
+
+                            subvention fixée à 50 % des dépenses
+                            d'investissement dans une limite de 20 000 €.
+                        </li>
+
+                    </ul>
+
+
+                    <!-- CONTACT -->
+
+                    <p>
+                        <strong>Contact</strong>
+                    </p>
+
+                    <p>
+                        Toute demande de renseignements concernant les
+                        conditions et modalités doit être adressée à
+                        l’adresse fonctionnelle :
+                    </p>
+
+                    <p>
+                        <a href="mailto:fondscommerces@anct.gouv.fr">
+                            fondscommerces@anct.gouv.fr
+                        </a>
+                    </p>
+
+
+                    <!-- EN SAVOIR PLUS -->
+
+                    <p>
+                        <strong>En savoir plus :</strong>
+                    </p>
+
+                    <p>
+                        <a
+                            href="https://anct.gouv.fr/programmes-dispositifs/reconquete-commerciale/le-fonds-de-soutien-au-commerce-rural"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Fonds de soutien au commerce rural – ANCT
+                        </a>
+                    </p>
+
                 </div>
-    
-                <!-- FICHE PROJET (cachée au départ) -->
-    
-                <div id="commune-card" style="display:none;">
-    
+
+
+                <!-- =========================================================
+                     FICHE PROJET
+                     Cachée au départ (display:none défini dans style.css)
+                     ========================================================= -->
+
+                <div id="commune-card">
+
                     <button
                         id="close-card"
                         class="btn btn-secondary btn-sm mb-3"
                     >
                         ← Retour à l'accueil
                     </button>
-    
+
                     <h3 id="sidebar-title"></h3>
-    
+
                     <div id="sidebar-content"></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================================
+                 INFO
+                 ============================================================= -->
+
+                 <div class="leaflet-sidebar-pane" id="info">
+
+                    <h2 class="leaflet-sidebar-header">
+                        En savoir plus
+                    </h2>
+    
+    
+                    <!-- LOGO ANCT + MARIANNE -->
+    
+                    <div class="home-logo">
+    
+                        <img
+                            src="img/LOGO-ANCT+Marianne.png"
+                            alt="ANCT et Marianne"
+                        >
+    
+                    </div>
+    
+    
+                    <p>
+                        Cette cartographie permet de visualiser les communes
+                        accompagnées dans le cadre du Fonds de soutien au
+                        commerce rural.
+                    </p>
+    
+    
+                    <p>
+                        Les données sont mises à jour automatiquement depuis Grist.
+                    </p>
+    
+    
+    
+                        <p>
+                            <strong>Source et administration des données :</strong> ANCT
+                        </p>
+    
+                        <p>
+                            <strong>Réalisation et maintenance de l'outil :</strong>
+                            Pôle Analyses et Diagnostics Territoriaux - ANCT -
+                            <a href="https://anct.gouv.fr/ressources/cartotheque" target="_blank" rel="noopener noreferrer">
+                                Équipe cartographie
+                            </a>
+                        </p>
+    
+                        <p>
+                            <strong>Données en open source :</strong>
+                            <a href="https://www.data.gouv.fr/datasets/fond-daccompagnement-a-linstallation-de-commerces-en-milieu-rural"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                data.gouv.fr
+                            </a>
+                        </p>
+    
+                        <p>
+                            <strong>Technologies utilisées :</strong> Leaflet, Bootstrap
+                        </p>
+    
+                        <p>
+                            <a href="https://anct.gouv.fr/ressources/cartotheque/fonds-de-soutien-aux-commerces-ruraux"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                Retrouvez ici la carte nationale du programme
+                            </a>
+                        </p>
+    
+                        <p>
+                            Le code source de cet outil est consultable sur
+                            <a href="https://www.github.com/anct-carto/commerces-ruraux"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                Github
+                            </a>.
+                        </p>
+    
     
                 </div>
     
-            </div>
-    
-            <!-- INFO -->
-    
-            <div class="leaflet-sidebar-pane" id="info">
-    
-                <h2 class="leaflet-sidebar-header">
-                    En savoir plus
-                </h2>
-    
-                <p>
-                    Cette cartographie permet de visualiser les projets
-                    accompagnés dans le cadre du Fonds de soutien au commerce rural.
-                </p>
-    
-                <p>
-                    Les données sont mises à jour automatiquement depuis Grist.
-                </p>
-    
-                <p>
-                    Source : ANCT.
-                </p>
     
             </div>
     
         </div>
-    
+
+
+        </div>
+
     </div>
 
-    
-    <!-- CARTE -->
+
+    <!-- =====================================================================
+         CARTE
+         ===================================================================== -->
 
     <div id="map"></div>
 
-    <!-- JS -->
+
+    <!-- =====================================================================
+         JAVASCRIPT
+         ===================================================================== -->
 
     <script src="lib/leaflet-1.9.2/leaflet.js"></script>
 

@@ -2,6 +2,7 @@
   "dependencies": {
     "basic-ftp": "^6.2.1",
     "dotenv": "^17.4.2",
+    "express": "^4.19.2",
     "leaflet": "^1.9.4",
     "node-fetch": "^2.7.0"
   }

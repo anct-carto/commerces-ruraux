@@ -2,11 +2,15 @@
 // CONFIGURATION
 // =====================================================================
 
-const GEOJSON_URL = "data/commerces-ruraux-geo.json";
+// En local (pendant que tu testes avec "node src/server.js") :
+const GEOJSON_URL = "http://localhost:5500/commerces-ruraux-geo.json";
+// Une fois déployé chez ton hébergeur, remplace la ligne ci-dessus par
+// l'URL réelle de ton app Node, par exemple :
+// const GEOJSON_URL = "https://tonsite.fr/api/commerces-ruraux-geo.json";
 
 const COLORS = {
-    fixe: "#2563eb",
-    ambulant: "#dc2626"
+    fixe: "#616DAF",
+    ambulant: "#398373"
 };
 
 // =====================================================================
@@ -63,6 +67,9 @@ const sidebar = L.control.sidebar({
     autopan: true
 }).addTo(map);
 
+// Ouverture automatique du panneau "Accueil" au chargement de la page
+sidebar.open("home");
+
 // =====================================================================
 // COUCHES
 // =====================================================================
@@ -77,22 +84,22 @@ const ambulantLayer = L.layerGroup().addTo(map);
 function getCategory(properties) {
 
     const value =
-        properties["Libellé - Téléservice plateforme"] || "";
+        properties["Libelle Téléservice"] || "";
 
     if (
         value ===
-        "Fonds de Soutien au Commerce Rural sédentaire - porteur de projet immobilier"
+        "Fonds de Soutien au Commerce Rural Non Sédentaire - Exploitant"
     ) {
-        return "fixe";
+        return "ambulant";
     }
 
     if (
         value ===
-            "Fonds soutien au commerce rural NON sédentaire/ambulant" ||
+            "Fonds de Soutien au Commerce Rural Sédentaire - Exploitant" ||
         value ===
-            "Fonds de Soutien au Commerce Rural Non Sédentaire - Exploitant"
+            "Fonds de Soutien au Commerce Rural Sédentaire - Porteur de Projet Immobilier"
     ) {
-        return "ambulant";
+        return "fixe";
     }
 
     return null;
@@ -110,6 +117,15 @@ function openSidebar(properties) {
     document.getElementById("sidebar-title").innerHTML =
         properties["Ville"] || "Commune";
 
+    const category = getCategory(properties);
+
+    const typeLabel =
+        category === "fixe"
+            ? "Fixe"
+            : category === "ambulant"
+                ? "Ambulant"
+                : "";
+
     document.getElementById("sidebar-content").innerHTML = `
 
         <div class="card shadow-sm">
@@ -122,7 +138,7 @@ function openSidebar(properties) {
                         <th>Commune</th>
                         <td>${properties["Ville"] || ""}</td>
                     </tr>
-
+                
                     <tr>
                         <th>Département</th>
                         <td>${properties["Département"] || ""}</td>
@@ -136,6 +152,11 @@ function openSidebar(properties) {
                     <tr>
                         <th>Activité</th>
                         <td>${properties["Activité principale synthétique"] || ""}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Type de commerce</th>
+                        <td>${typeLabel}</td>
                     </tr>
 
                 </table>
@@ -173,7 +194,18 @@ fetch(GEOJSON_URL)
 
         const bounds = [];
 
-        L.geoJSON(data, {
+        // =================================================================
+        // FILTRE : on ne garde que les demandes "Votée"
+        // =================================================================
+        const filteredData = {
+            ...data,
+            features: data.features.filter(
+                feature =>
+                    feature.properties["Statut libellé - Demande"] === "Votée"
+            )
+        };
+
+        L.geoJSON(filteredData, {
 
             pointToLayer(feature, latlng) {
 
@@ -191,7 +223,7 @@ fetch(GEOJSON_URL)
                 }
 
                 return L.circleMarker(latlng, {
-                    radius: 8,
+                    radius: 5,
                     fillColor: color,
                     fillOpacity: 0.9,
                     color: "#ffffff",
@@ -212,7 +244,7 @@ fetch(GEOJSON_URL)
                 layer.on("mouseover", function() {
 
                     this.setStyle({
-                        radius: 12,
+                        radius: 7,
                         weight: 3,
                         color: "#fffffff",
                         fillOpacity: 1
@@ -226,7 +258,7 @@ fetch(GEOJSON_URL)
                 layer.on("mouseout", function() {
 
                     this.setStyle({
-                        radius: 8,
+                        radius: 5,
                         weight: 1,
                         color: "#ffffff",
                         fillOpacity: 0.9
@@ -246,6 +278,11 @@ fetch(GEOJSON_URL)
 
         });
 
+        // Les points "ambulant" doivent toujours passer au-dessus des "fixe"
+        ambulantLayer.eachLayer(function (layer) {
+            layer.bringToFront();
+        });
+
         if (bounds.length > 0) {
             map.fitBounds(L.latLngBounds(bounds));
         }
@@ -259,7 +296,7 @@ fetch(GEOJSON_URL)
 // LEGENDE
 // =====================================================================
 const legend = L.control({
-    position: "bottomright"
+    position: "topright"
 });
 
 legend.onAdd = function () {
@@ -322,18 +359,18 @@ document.addEventListener("change", function(e) {
     if (e.target.id === "toggle-fixe") {
 
         if (e.target.checked) {
-            map.addLayer(coucheFixe);
+            map.addLayer(fixeLayer);
         } else {
-            map.removeLayer(coucheFixe);
+            map.removeLayer(fixeLayer);
         }
     }
 
     if (e.target.id === "toggle-ambulant") {
 
         if (e.target.checked) {
-            map.addLayer(coucheAmbulant);
+            map.addLayer(ambulantLayer);
         } else {
-            map.removeLayer(coucheAmbulant);
+            map.removeLayer(ambulantLayer);
         }
     }
 
