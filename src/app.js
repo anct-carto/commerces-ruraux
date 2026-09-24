@@ -2,11 +2,9 @@
 // CONFIGURATION
 // =====================================================================
 
-// En local (pendant que tu testes avec "node src/server.js") :
-const GEOJSON_URL = "http://localhost:5500/commerces-ruraux-geo.json";
-// Une fois déployé chez ton hébergeur, remplace la ligne ci-dessus par
-// l'URL réelle de ton app Node, par exemple :
-// const GEOJSON_URL = "https://tonsite.fr/api/commerces-ruraux-geo.json";
+// Fichier statique généré automatiquement par GitHub Actions
+// (voir src/update-data.js et .github/workflows/update-data.yml).
+const GEOJSON_URL = "data/commerces-ruraux-geo.json";
 
 const COLORS = {
     fixe: "#616DAF",
@@ -138,7 +136,12 @@ function openSidebar(properties) {
                         <th>Commune</th>
                         <td>${properties["Ville"] || ""}</td>
                     </tr>
-                
+
+                    <tr>
+                        <th>Type</th>
+                        <td>${typeLabel}</td>
+                    </tr>
+
                     <tr>
                         <th>Département</th>
                         <td>${properties["Département"] || ""}</td>
@@ -152,11 +155,6 @@ function openSidebar(properties) {
                     <tr>
                         <th>Activité</th>
                         <td>${properties["Activité principale synthétique"] || ""}</td>
-                    </tr>
-
-                    <tr>
-                        <th>Type de commerce</th>
-                        <td>${typeLabel}</td>
                     </tr>
 
                 </table>

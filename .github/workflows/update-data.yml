@@ -1,0 +1,38 @@
+name: Mise à jour des données Grist
+
+on:
+  # Bouton "Run workflow" manuel dans l'onglet Actions de GitHub
+  workflow_dispatch:
+
+  # Mise à jour automatique tous les jours à 6h du matin (heure UTC)
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Installer les dépendances
+        run: npm install
+
+      - name: Générer le fichier de données
+        env:
+          GRIST_API_KEY: ${{ secrets.GRIST_API_KEY }}
+        run: node src/update-data.js
+
+      - name: Commit et push si le fichier a changé
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/commerces-ruraux-geo.json
+          git diff --cached --quiet && echo "Aucun changement." || git commit -m "Mise à jour automatique des données Grist"
+          git push
