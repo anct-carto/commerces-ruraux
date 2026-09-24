@@ -21,7 +21,7 @@ require("dotenv").config({
   path: path.join(__dirname, "..", ".env"),
 });
 
-const GRIST_API_KEY = process.env.GRIST_API_KEY;
+const GRIST_API_KEY = (process.env.GRIST_API_KEY || "").trim();
 
 if (!GRIST_API_KEY) {
   console.error(
