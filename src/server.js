@@ -47,11 +47,8 @@ const CACHE_DURATION_MS = 10 * 60 * 1000;
 // Node.js mutualisées type cPanel/Plesk) ou 3000 par défaut en local.
 const PORT = process.env.PORT || 5500;
 
-// Export CSV "brut" de la table entière, indépendant de toute vue,
-// tri ou filtre Grist (qui référencent des colRef internes fragiles).
-// Le filtrage est fait côté front dans app.js.
 const GRIST_CSV_URL =
-  "https://grist.incubateur.anct.gouv.fr/o/anct/api/docs/rWVx4q6bWSaFP9CRJwEvCc/download/csv?tableId=Suivi_des_demandes_commerce_rural";
+  "https://grist.incubateur.anct.gouv.fr/o/anct/api/docs/rWVx4q6bWSaFP9CRJwEvCc/download/csv?viewSection=373&tableId=Suivi_des_demandes_commerce_rural&activeSortSpec=%5B2641%5D&filters=%5B%7B%22colRef%22%3A2645%2C%22filter%22%3A%22%7B%5C%22excluded%5C%22%3A%5B%5D%7D%22%7D%5D&linkingFilter=%7B%22filters%22%3A%7B%7D%2C%22operations%22%3A%7B%7D%7D" ;
 
 // server.js est dans src/, data/ est au même niveau que src/ à la racine du projet.
 const GEOJSON_INPUT_PATH = path.join(__dirname, "..", "data", "geom_ctr.geojson");
@@ -70,10 +67,8 @@ async function fetchGristCsv() {
   });
 
   if (!response.ok) {
-    const body = await response.text().catch(() => "");
     throw new Error(
-      `Échec de la requête Grist : ${response.status} ${response.statusText}` +
-        (body ? ` — ${body.slice(0, 500)}` : "")
+      `Échec de la requête Grist : ${response.status} ${response.statusText}`
     );
   }
 
